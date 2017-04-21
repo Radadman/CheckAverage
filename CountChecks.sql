@@ -1,4 +1,4 @@
-t
+
 --Get Count of Checks that are not catering
 SELECT count(distinct concat(id.LocationID, convert(int,id.DOB,0), id.CheckNumber))
 FROM SaleDepartment sd
