@@ -1,10 +1,12 @@
 --Select only checks that have sandwich and drink
-Select count(distinct exp.checknumber)
-    From (Select id.* From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN 3/22/2017 AND 3/22/2017 AND id.LocationID = 22) exp
+Select distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber) AS CheckID, SUM(exp.GrossPrice) AS GrossPrice, SUM(exp.NetPrice) AS NetPrice
+    From (Select id.* From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN @StartDate AND @EndDate AND id.LocationID = 22) exp
     Where
-    exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN 3/22/2017 AND 3/22/2017 AND id.LocationID = 22) e1 Where e1.checknumber = exp.checknumber and e1.ItemGroupID in (281))
-    and exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN 3/22/2017 AND 3/22/2017 AND id.LocationID = 22) e1 Where e1.checknumber = exp.checknumber and e1.ItemGroupID in (274))
-    and not exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN 3/22/2017 AND 3/22/2017 AND id.LocationID = 22) e1 Where e1.checknumber = exp.checknumber and e1.ItemGroupID in (280, 34))
+    exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN @StartDate AND @EndDate AND id.LocationID = 22 AND igm.ItemGroupID in (281)) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+    and exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN @StartDate AND @EndDate AND id.LocationID = 22 and igm.ItemGroupID in (274)) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+    and not exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN @StartDate AND @EndDate AND id.LocationID = 22 and igm.ItemGroupID in (280, 34)) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+GROUP BY LocationID, DOB, CheckNumber
+ORDER BY CheckID
 
 --Select checks with a certain item
 Select distinct concat(ch.LocationID, convert(int,ch.DOB,0), ch.CheckNumber) AS CheckID, SUM(ch.GrossPrice) AS GrossPrice
