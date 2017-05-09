@@ -6,6 +6,5 @@ INNER JOIN Item i ON sd.SaleDepartmentID = i.SaleDepartmentID
 INNER JOIN ItemDetail id ON i.ItemID = id.ItemID
 WHERE DOB BETWEEN @StartDate and @EndDate
 AND MasterSaleDepartmentID<>3
-AND
 
 --Get Total Net Sales of all checks that do not include catering
