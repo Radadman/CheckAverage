@@ -30,3 +30,19 @@ WHERE
 DOB BETWEEN @StartDate and @EndDate
 AND GrossPrice > 4.5
 GROUP BY exp.LocationID, exp.DOB, exp.CheckNumber
+
+--Select only checks that have a catering item
+SELECT concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber) AS CheckID, exp.GrossPrice, exp.NetPrice, exp.MasterSaleDepartmentID
+FROM 
+(SELECT id.LocationID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice, msd.MasterSaleDepartmentID 
+FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
+INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID 
+WHERE DOB BETWEEN @StartDate and @EndDate) exp
+WHERE exists 
+(SELECT cat.LocationID, cat.DOB, cat.CheckNumber, cat.ItemID, cat.GrossPrice, cat.NetPrice, cat.MasterSaleDepartmentID
+FROM (SELECT id.*, sd.MasterSaleDepartmentID FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID 
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
+WHERE DOB BETWEEN @StartDate and @EndDate) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
