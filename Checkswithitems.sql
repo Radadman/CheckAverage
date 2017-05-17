@@ -46,3 +46,12 @@ FROM (SELECT id.*, sd.MasterSaleDepartmentID FROM ItemDetail id
 INNER JOIN Item it ON id.ItemID = it.ItemID 
 INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
 WHERE DOB BETWEEN @StartDate and @EndDate) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+
+--Count # of catering checks
+SELECT count(distinct(concat(id.LocationID, convert(int,id.DOB,0), id.CheckNumber))) AS CheckID
+FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
+INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID 
+WHERE id.DOB BETWEEN '@StartDate' and '@EndDate' 
+and msd.MasterSaleDepartmentID = 3
