@@ -55,3 +55,22 @@ INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
 INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID 
 WHERE id.DOB BETWEEN '@StartDate' and '@EndDate' 
 and msd.MasterSaleDepartmentID = 3
+
+-- Count of catering checks by location by day
+SELECT count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount, exp.LocationID, convert(varchar(10), exp.DOB, 110) AS Date
+FROM 
+(SELECT id.LocationID, lgm.LocationGroupID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice, msd.MasterSaleDepartmentID  
+FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
+INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID
+INNER JOIN LocationGroupMember lgm ON id.LocationID = lgm.LocationID
+WHERE DOB BETWEEN '@StartDate' and '@EndDate') exp
+WHERE exists 
+(SELECT cat.LocationID, cat.DOB, cat.CheckNumber, cat.ItemID, cat.GrossPrice, cat.NetPrice, cat.MasterSaleDepartmentID
+FROM (SELECT id.*, sd.MasterSaleDepartmentID FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID 
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
+WHERE DOB BETWEEN '@StartDate' and '@EndDate') cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+AND exp.LocationGroupID = 1782
+GROUP BY exp.LocationID, exp.DOB
