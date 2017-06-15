@@ -77,12 +77,11 @@ AND exp.ItemGroupID IN (178,179,180)
 AND exp.GrossPrice >1
 
 -- Count Items for Item Group and Location Group
-Select sum(exp.Quantity)
-From (Select id.*, igm.ItemGroupID, lgm.LocationGroupID From ItemDetail id INNER JOIN ItemGroupMember igm ON id.ItemID = igm.ItemID INNER JOIN LocationGroupMember lgm ON id.LocationID = lgm.LocationID  WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate') exp
+SELECT sum(exp.Quantity)
+From (Select id.quantity, id.GrossPrice, id.LocationID, id.DOB, id.CheckNumber, id.ItemID, igm.ItemGroupID From ItemDetail id INNER JOIN ItemGroupMember igm ON id.ItemID = igm.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate') exp
     Where
-    exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID in (302) AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
-and exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID in (303) AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
-and exists (Select e1.ItemGroupID From (Select id.*, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID in (178,179,180) AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
-AND exp.ItemGroupID IN (178,179,180)
+    exists (Select e1.ItemGroupID From (Select id.quantity, id.GrossPrice, id.LocationID, id.DOB, id.CheckNumber, id.ItemID, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID = 302 AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+and exists (Select e1.ItemGroupID From (Select id.quantity, id.GrossPrice, id.LocationID, id.DOB, id.CheckNumber, id.ItemID, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID = 303 AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+and exists (Select e1.ItemGroupID From (Select id.quantity, id.GrossPrice, id.LocationID, id.DOB, id.CheckNumber, id.ItemID, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID in (178,179,180) AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+AND exp.ItemGroupID = 302
 AND exp.GrossPrice >1
-AND exp.LocationGroupID = 1
