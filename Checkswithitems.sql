@@ -48,7 +48,7 @@ WHERE id.DOB BETWEEN '@StartDate' and '@EndDate'
 and msd.MasterSaleDepartmentID = 3
 
 -- Count of catering checks by location by day
-SELECT count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount, exp.LocationID, convert(varchar(10), exp.DOB, 110) AS Date
+SELECT exp.LocationID, convert(varchar(10), exp.DOB, 110) AS Date, count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount
 FROM 
 (SELECT id.LocationID, lgm.LocationGroupID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice, msd.MasterSaleDepartmentID  
 FROM ItemDetail id
