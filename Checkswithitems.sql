@@ -85,3 +85,23 @@ and exists (Select e1.ItemGroupID From (Select id.quantity, id.GrossPrice, id.Lo
 and exists (Select e1.ItemGroupID From (Select id.quantity, id.GrossPrice, id.LocationID, id.DOB, id.CheckNumber, id.ItemID, igm.ItemGroupID From ItemGroupMember igm INNER JOIN ItemDetail id ON igm.ItemID = id.ItemID WHERE id.DOB BETWEEN '@StartDate' AND '@EndDate' AND igm.ItemGroupID in (178,179,180) AND id.GrossPrice >1) e1 Where concat(e1.LocationID, convert(int,e1.DOB,0), e1.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
 AND exp.ItemGroupID = 303
 AND exp.GrossPrice >1
+
+-- Count Checks and Sum Net Price for all Catering Checks
+SELECT exp.LocationID, exp.LocationName, convert(varchar(10), exp.DOB, 110) AS Date, count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount, sum(exp.NetPrice) as NetSales
+FROM 
+(SELECT id.LocationID, lo.LocationName,  lgm.LocationGroupID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice, msd.MasterSaleDepartmentID  
+FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
+INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID
+INNER JOIN LocationGroupMember lgm ON id.LocationID = lgm.LocationID
+INNER JOIN Location lo ON id.LocationID = lo.LocationID
+WHERE DOB BETWEEN '@StartDate' and '@EndDate') exp
+WHERE exists 
+(SELECT cat.LocationID, cat.DOB, cat.CheckNumber, cat.ItemID, cat.GrossPrice, cat.NetPrice, cat.MasterSaleDepartmentID
+FROM (SELECT id.*, sd.MasterSaleDepartmentID FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID 
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
+WHERE DOB BETWEEN '@StartDate' and '@EndDate' and id.GrossPrice > 1) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+AND exp.LocationGroupID = 1
+GROUP BY exp.LocationID, exp.LocationName, exp.DOB
