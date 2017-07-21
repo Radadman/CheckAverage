@@ -137,3 +137,23 @@ AND igm.ItemGroupID IN (127, 128, 129, 261, 314, 130, 282, 131, 246)
 AND lgm.LocationGroupID = '@LocationGroupID'
 GROUP BY id.LocationID, ig.ItemGroupName, igm.ItemGroupID
 
+-- Catering Orders by location by day by check
+SELECT exp.LocationID, exp.LocationName, convert(varchar(10), exp.DOB, 110) AS Date, count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount, sum(exp.GrossPrice) as GrossSales, sum(exp.NetPrice) as NetSales
+FROM 
+(SELECT id.LocationID, lo.LocationName,  lgm.LocationGroupID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice, msd.MasterSaleDepartmentID  
+FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID
+INNER JOIN MasterSaleDepartment msd ON sd.MasterSaleDepartmentID = msd.MasterSaleDepartmentID
+INNER JOIN LocationGroupMember lgm ON id.LocationID = lgm.LocationID
+INNER JOIN Location lo ON id.LocationID = lo.LocationID
+WHERE DOB BETWEEN '@StartDate' and '@EndDate') exp
+WHERE exists 
+(SELECT cat.LocationID, cat.DOB, cat.CheckNumber, cat.ItemID, cat.GrossPrice, cat.NetPrice, cat.MasterSaleDepartmentID
+FROM (SELECT id.*, sd.MasterSaleDepartmentID FROM ItemDetail id
+INNER JOIN Item it ON id.ItemID = it.ItemID 
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
+WHERE DOB BETWEEN '@StartDate' and '@EndDate' and id.GrossPrice > 1) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+AND exp.LocationGroupID = 1 -- Comp Group 1733
+GROUP BY exp.LocationID, exp.LocationName, exp.DOB, exp.CheckNumber
+ORDER BY NetSales asc
