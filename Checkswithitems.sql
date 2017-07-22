@@ -157,3 +157,18 @@ WHERE DOB BETWEEN '@StartDate' and '@EndDate' and id.GrossPrice > 1) cat WHERE c
 AND exp.LocationGroupID = 1 -- Comp Group 1733
 GROUP BY exp.LocationID, exp.LocationName, exp.DOB, exp.CheckNumber
 ORDER BY NetSales asc
+
+-- Net Sales of Promo/Comp
+SELECT exp.LocationID, exp.LocationName, convert(varchar(10), exp.DOB, 110) AS Date, count(distinct concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber)) AS CheckCount, sum(exp.NetPrice) as NetSales, sum(exp.GrossPrice) as GrossSales
+FROM 
+(SELECT id.LocationID, lo.LocationName,  lgm.LocationGroupID, id.DOB, id.CheckNumber, id.GrossPrice, id.NetPrice
+FROM ItemDetail id
+INNER JOIN LocationGroupMember lgm ON id.LocationID = lgm.LocationID
+INNER JOIN Location lo ON id.LocationID = lo.LocationID
+WHERE DOB BETWEEN '@StartDate' and '@EndDate') exp
+WHERE exists 
+(SELECT cat.LocationID, cat.DOB, cat.CheckNumber, cat.ItemID, cat.CompID
+FROM (SELECT cd.* FROM CompDetail cd 
+WHERE cd.DOB BETWEEN '@StartDate' and '@EndDate' and cd.CompID = 306) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
+AND exp.LocationGroupID = 1
+GROUP BY exp.LocationID, exp.LocationName, exp.DOB
