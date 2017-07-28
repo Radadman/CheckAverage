@@ -172,3 +172,11 @@ FROM (SELECT cd.* FROM CompDetail cd
 WHERE cd.DOB BETWEEN '@StartDate' and '@EndDate' and cd.CompID = 306) cat WHERE concat(cat.LocationID,convert(int,cat.DOB,0), cat.CheckNumber) = concat(exp.LocationID, convert(int,exp.DOB,0), exp.CheckNumber))
 AND exp.LocationGroupID = 1
 GROUP BY exp.LocationID, exp.LocationName, exp.DOB
+
+-- Number of guests (sandwiches) for radio test
+Select sum(idt.Quantity)
+FROM ItemDayTotal idt
+INNER JOIN ItemGroupMember igm ON idt.ItemID = igm.ItemID and igm.ItemGroupID = 165
+WHERE idt.DOB BETWEEN '@StartDate' and '@EndDate'
+AND LocationID IN (212,204,126,90,64,13,439,370,369,274,429,428,426,392,391,256,165,80,436,269,441,170,147,86,443,347,279,271,257,228,188,184,116,513,333,215,95,55)  
+AND idt.GrossPrice <> 0
