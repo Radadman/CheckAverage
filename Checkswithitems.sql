@@ -180,3 +180,16 @@ INNER JOIN ItemGroupMember igm ON idt.ItemID = igm.ItemID and igm.ItemGroupID = 
 WHERE idt.DOB BETWEEN '@StartDate' and '@EndDate'
 AND LocationID IN (212,204,126,90,64,13,439,370,369,274,429,428,426,392,391,256,165,80,436,269,441,170,147,86,443,347,279,271,257,228,188,184,116,513,333,215,95,55)  
 AND idt.GrossPrice <> 0
+
+
+-- Catering Item Quantity by Day by Location
+SELECT idt.LocationID, convert(varchar(10), idt.DOB, 110), sum(idt.Quantity) as Quantity, sum(idt.NetPrice) as NetSales
+FROM ItemDayTotal idt
+INNER JOIN Item it ON idt.ItemID = it.ItemID
+INNER JOIN SaleDepartment sd ON it.SaleDepartmentID = sd.SaleDepartmentID and sd.MasterSaleDepartmentID = 3
+INNER JOIN LocationGroupMember lgm ON idt.LocationID = lgm.LocationID
+WHERE lgm.LocationGroupID = 1
+AND idt.DOB BETWEEN '@StartDate' and '@EndDate'
+AND idt.GrossPrice > 1
+GROUP BY idt.LocationID, idt.DOB
+ORDER BY idt.LocationID
